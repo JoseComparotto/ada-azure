@@ -21,4 +21,28 @@ def get_db_connection() -> pyodbc.Connection:
     print(conn_str)
 
     return pyodbc.connect(conn_str)
- 
+
+@app.route(route="produtos", methods=['get'])
+def getAllProducts(req: func.HttpRequest) -> func.HttpResponse:
+
+    try:
+        cursor: Cursor = get_db_connection().cursor()
+
+        cursor.execute("SELECT Id, Nome, Descricao, Preco, QuantidadeEstoque, Categoria FROM [dbo].[Produtos]")
+
+        produtos = [ 
+            {
+                "id":   row[0],
+                "nome": row[1],
+                "descircao": row[2],
+                "preco": float(row[3]),
+                "quantidade_estoque": row[4],
+                "categoria": row[5],
+            } for row in cursor.fetchall() 
+        ]
+
+        return func.HttpResponse(json.dumps(produtos), mimetype="application/json", status_code=200)
+
+    except Exception as e:
+        logging.error(f"Database connection failed: {e}")
+        return func.HttpResponse("Error fetching products data.", status_code=500)
