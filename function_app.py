@@ -116,7 +116,7 @@ def deleteProductById(req: func.HttpRequest) -> func.HttpResponse:
         produto = {
             "id":   row[0],
             "nome": row[1],
-            "descircao": row[2],
+            "descricao": row[2],
             "preco": float(row[3]),
             "quantidade_estoque": row[4],
             "categoria": row[5],
