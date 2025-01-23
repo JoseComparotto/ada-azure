@@ -28,7 +28,7 @@ def getAllProducts(req: func.HttpRequest) -> func.HttpResponse:
             {
                 "id":   row[0],
                 "nome": row[1],
-                "descircao": row[2],
+                "descricao": row[2],
                 "preco": float(row[3]),
                 "quantidade_estoque": row[4],
                 "categoria": row[5],
@@ -72,7 +72,7 @@ def getProductById(req: func.HttpRequest) -> func.HttpResponse:
         produto = {
             "id":   row[0],
             "nome": row[1],
-            "descircao": row[2],
+            "descricao": row[2],
             "preco": float(row[3]),
             "quantidade_estoque": row[4],
             "categoria": row[5],
@@ -83,6 +83,70 @@ def getProductById(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Database connection failed: {e}")
         return func.HttpResponse("Error fetching products data.", status_code=500)
+
+@app.route(route="produtos", methods=['post'])
+def createProduct(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        product_data = req.get_json()
+
+        # Validação básica dos campos obrigatórios
+        required_fields = ["nome", "descricao", "preco", "quantidade_estoque", "categoria"]
+        if not all(field in product_data for field in required_fields):
+            return func.HttpResponse("Missing required fields.", mimetype="text/plain", status_code=400)
+
+        conn = get_db_connection()
+        cursor: pymssql.Cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO [dbo].[Produtos] (Nome, Descricao, Preco, QuantidadeEstoque, Categoria)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (product_data["nome"], product_data["descricao"], product_data["preco"], 
+              product_data["quantidade_estoque"], product_data["categoria"]))
+
+        conn.commit()
+
+        return func.HttpResponse("Product created successfully.", status_code=201)
+
+    except Exception as e:
+        logging.error(f"Database operation failed: {e}")
+        return func.HttpResponse("Error creating product.", status_code=500)
+
+@app.route(route="produtos/{id}", methods=['put'])
+def updateProductById(req: func.HttpRequest) -> func.HttpResponse:
+    product_id = req.route_params["id"]
+
+    if not re.match(r'^\d+$', product_id):
+        return func.HttpResponse("Malformed parameter. Expected integer Id.", mimetype="text/plain", status_code=400)
+
+    try:
+        product_data = req.get_json()
+
+        # Validação básica dos campos obrigatórios
+        required_fields = ["nome", "descricao", "preco", "quantidade_estoque", "categoria"]
+        
+        if not all(field in product_data for field in required_fields):
+            return func.HttpResponse("Missing required fields.", mimetype="text/plain", status_code=400)
+
+        conn = get_db_connection()
+        cursor: pymssql.Cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE [dbo].[Produtos]
+            SET Nome = %s, Descricao = %s, Preco = %s, QuantidadeEstoque = %s, Categoria = %s
+            WHERE Id = %s
+        """, (product_data["nome"], product_data["descricao"], product_data["preco"], 
+              product_data["quantidade_estoque"], product_data["categoria"], product_id))
+
+        if cursor.rowcount == 0:
+            return func.HttpResponse("Resource not found in database.", mimetype="text/plain", status_code=404)
+
+        conn.commit()
+
+        return func.HttpResponse("Product updated successfully.", status_code=200)
+
+    except Exception as e:
+        logging.error(f"Database operation failed: {e}")
+        return func.HttpResponse("Error updating product.", status_code=500)
 
 @app.route(route="produtos/{id}", methods=['delete'])
 def deleteProductById(req: func.HttpRequest) -> func.HttpResponse:

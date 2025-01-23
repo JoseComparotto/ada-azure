@@ -5,6 +5,7 @@ info:
   version: 1.0.0
 servers:
   - url: https://comparotto-app.azurewebsites.net/api
+  - url: http://localhost:7071/api
 paths:
   /produtos:
     get:
@@ -21,6 +22,22 @@ paths:
                   $ref: '#/components/schemas/Produto'
         '500':
           description: Erro ao buscar os dados dos produtos.
+    post:
+      summary: Cria um novo produto
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Produto'
+      responses:
+        '201':
+          description: Produto criado com sucesso.
+        '400':
+          description: Dados inválidos.
+        '500':
+          description: Erro ao criar o produto.
   /produtos/{id}:
     get:
       summary: Retorna um produto pelo ID
@@ -44,6 +61,30 @@ paths:
           description: Produto não encontrado.
         '500':
           description: Erro ao buscar os dados do produto.
+    put:
+      summary: Atualiza um produto pelo ID
+      operationId: updateProductById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Produto'
+      responses:
+        '200':
+          description: Produto atualizado com sucesso.
+        '400':
+          description: Dados inválidos.
+        '404':
+          description: Produto não encontrado.
+        '500':
+          description: Erro ao atualizar o produto.
     delete:
       summary: Deleta um produto pelo ID
       operationId: deleteProductById
