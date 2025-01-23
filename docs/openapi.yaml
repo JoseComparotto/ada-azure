@@ -1,0 +1,92 @@
+openapi: 3.0.0
+info:
+  title: API de Produtos
+  description: API para gerenciamento de produtos utilizando Azure Functions e SQL Server.
+  version: 1.0.0
+servers:
+  - url: https://comparotto-app.azurewebsites.net/api
+paths:
+  /produtos:
+    get:
+      summary: Retorna todos os produtos
+      operationId: getAllProducts
+      responses:
+        '200':
+          description: Lista de produtos retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Produto'
+        '500':
+          description: Erro ao buscar os dados dos produtos.
+  /produtos/{id}:
+    get:
+      summary: Retorna um produto pelo ID
+      operationId: getProductById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Produto encontrado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Produto'
+        '400':
+          description: Parâmetro mal formado.
+        '404':
+          description: Produto não encontrado.
+        '500':
+          description: Erro ao buscar os dados do produto.
+    delete:
+      summary: Deleta um produto pelo ID
+      operationId: deleteProductById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Produto deletado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Produto'
+        '400':
+          description: Parâmetro mal formado.
+        '404':
+          description: Produto não encontrado.
+        '500':
+          description: Erro ao deletar o produto.
+components:
+  schemas:
+    Produto:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nome:
+          type: string
+          example: Produto A
+        descricao:
+          type: string
+          example: Descrição do Produto A
+        preco:
+          type: number
+          format: float
+          example: 19.99
+        quantidade_estoque:
+          type: integer
+          example: 100
+        categoria:
+          type: string
+          example: Eletrônicos
