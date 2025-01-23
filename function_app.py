@@ -42,7 +42,7 @@ def getAllProducts(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Error fetching products data.", status_code=500)
 
 @app.route(route="produtos/{id}", methods=['get'])
-def getProductsById(req: func.HttpRequest) -> func.HttpResponse:
+def getProductById(req: func.HttpRequest) -> func.HttpResponse:
 
     product_id = req.route_params["id"]
 
