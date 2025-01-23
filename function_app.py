@@ -83,3 +83,53 @@ def getProductById(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Database connection failed: {e}")
         return func.HttpResponse("Error fetching products data.", status_code=500)
+
+@app.route(route="produtos/{id}", methods=['delete'])
+def deleteProductById(req: func.HttpRequest) -> func.HttpResponse:
+
+    product_id = req.route_params["id"]
+
+    if not re.match(r'^\d+$', product_id):
+        return func.HttpResponse("Malformed parameter. Expected integer Id.", mimetype="text/plain", status_code=400)
+
+    try:
+        conn = get_db_connection()
+        cursor: pymssql.Cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT 
+                Id,
+                Nome,
+                Descricao,
+                Preco,
+                QuantidadeEstoque,
+                Categoria
+            FROM [dbo].[Produtos]
+            WHERE Id = %d
+        """, product_id)
+
+        row = cursor.fetchone()
+
+        if row == None:
+            return func.HttpResponse("Resource not found in database.", mimetype="text/plain", status_code=404)
+
+        produto = {
+            "id":   row[0],
+            "nome": row[1],
+            "descircao": row[2],
+            "preco": float(row[3]),
+            "quantidade_estoque": row[4],
+            "categoria": row[5],
+        }
+
+        cursor.execute("""
+            DELETE FROM [dbo].[Produtos] WHERE Id = %d
+        """, product_id)
+
+        conn.commit()
+
+        return func.HttpResponse(json.dumps(produto), mimetype="application/json", status_code=200)
+
+    except Exception as e:
+        logging.error(f"Database connection failed: {e}")
+        return func.HttpResponse("Error fetching products data.", status_code=500)
