@@ -198,13 +198,6 @@ def deleteProductById(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f"Database connection failed: {e}")
         return func.HttpResponse("Error fetching products data.", status_code=500)
 
-# Rota para servir o arquivo openapi.yaml
-@app.route(route="openapi.yaml", methods=['get'])
-def openapi_yaml(req: func.HttpRequest) -> func.HttpResponse:
-    with open('docs/openapi.yaml', 'r') as file:
-        openapi_yaml_content = file.read()
-    return func.HttpResponse(openapi_yaml_content, mimetype="application/yaml")
-
 # Rota para servir o Swagger UI
 @app.route(route="swagger-ui.html", methods=['get'])
 def swagger_ui(req: func.HttpRequest) -> func.HttpResponse:
